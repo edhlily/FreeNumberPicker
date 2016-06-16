@@ -1,90 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="zjsx.freenumberpicker.MainActivity">
+    android:layout_height="match_parent">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="普通" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="zjsx.freenumberpicker.MainActivity">
 
-    <zjsx.freenumberpicker.FreeNumberPicker
-        android:id="@+id/numperPicker1"
-        android:layout_width="150dp"
-        android:layout_height="50dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="普通" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="调整大小" />
+        <zjsx.freenumberpicker.FreeNumberPicker
+            android:id="@+id/numperPicker1"
+            android:layout_width="150dp"
+            android:layout_height="50dp" />
 
-    <zjsx.freenumberpicker.FreeNumberPicker
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        app:buttonTextSize="8dp"
-        app:numberSize="8dp"
-        app:numberWidth="100dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="调整大小" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="颜色设定" />
+        <zjsx.freenumberpicker.FreeNumberPicker
+            android:layout_width="200dp"
+            android:layout_height="50dp"
+            app:buttonTextSize="8dp"
+            app:numberSize="8dp"
+            app:numberWidth="100dp" />
 
-    <zjsx.freenumberpicker.FreeNumberPicker
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-        app:borderColor="#FF0000"
-        app:buttonColor="#FF0000"
-        app:buttonPressColor="#00FF00"
-        app:buttonTextColor="#0000FF"
-        app:buttonTextPressColor="#FFFFFF"
-        app:numberColor="#FF0000" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="颜色设定" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="边框设定" />
+        <zjsx.freenumberpicker.FreeNumberPicker
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            app:borderColor="#FF0000"
+            app:buttonColor="#FF0000"
+            app:buttonPressColor="#00FF00"
+            app:buttonTextColor="#0000FF"
+            app:buttonTextPressColor="#FFFFFF"
+            app:numberColor="#FF0000" />
 
-    <zjsx.freenumberpicker.FreeNumberPicker
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-        app:borderWidth="1dp"
-        app:buttonRadius="4dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="边框设定" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="最大值最小值[0~10]" />
+        <zjsx.freenumberpicker.FreeNumberPicker
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            app:borderWidth="1dp"
+            app:buttonRadius="4dp" />
 
-    <zjsx.freenumberpicker.FreeNumberPicker
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-        app:maxValue="10"
-        app:minValue="0"
-        app:supportEdit="false" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="最大值最小值[0~10]" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="禁止滑动和编辑" />
+        <zjsx.freenumberpicker.FreeNumberPicker
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            app:maxValue="10"
+            app:minValue="0"
+            app:supportEdit="false" />
 
-    <zjsx.freenumberpicker.FreeNumberPicker
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-        app:supportEdit="false"
-        app:supportMove="false" />
-</LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="禁止滑动和编辑" />
+
+        <zjsx.freenumberpicker.FreeNumberPicker
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            app:supportEdit="false"
+            app:supportMove="false" />
+    </LinearLayout>
+</ScrollView>
