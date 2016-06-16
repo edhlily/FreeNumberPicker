@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FreeNumberPicker">
+        <attr name="buttonColor" format="color" />
+        <attr name="buttonPressColor" format="color" />
+        <attr name="buttonTextColor" format="color" />
+        <attr name="buttonTextPressColor" format="color" />
+        <attr name="buttonTextDisableColor" format="color" />
+        <attr name="numberColor" format="color" />
+        <attr name="minValue" format="integer" />
+        <attr name="maxValue" format="integer" />
+        <attr name="buttonTextSize" format="dimension" />
+        <attr name="numberSize" format="dimension" />
+        <attr name="numberWidth" format="dimension" />
+        <attr name="supportEdit" format="boolean" />
+        <attr name="supportMove" format="boolean" />
+        <attr name="borderColor" format="color" />
+        <attr name="borderWidth" format="dimension" />
+        <attr name="buttonRadius" format="dimension" />
+        <attr name="buttonDisableColor" format="color" />
+    </declare-styleable>
+</resources>
