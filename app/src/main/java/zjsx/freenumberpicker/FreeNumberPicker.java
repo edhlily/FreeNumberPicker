@@ -1,7 +1,6 @@
 package zjsx.freenumberpicker;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,41 +9,47 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 /**
  * Created by di.zhang on 2016/6/16.
  */
 public class FreeNumberPicker extends LinearLayout {
     int mViewWidth, mViewHeight;
-    int buttonColor;
-    int buttonDisableColor;
-    int buttonPressColor;
-    int buttonTextColor;
-    int buttonTextPressColor;
-    int buttonTextDisableColor;
-    int numberColor = Color.BLACK;
+    int btnColor;
+    int btnDisableColor;
+    int btnPressColor;
+    int btnTextColor;
+    int btnTextPressColor;
+    int btnTextDisableColor;
+    int numberColor;
+    int numberTextColor;
     int maxValue;
     int minValue;
-    float buttonTextSize;
+    float btnTextSize;
     float numberSize;
-    int borderColor;
-    float buttonRadius;
-    float borderWidth;
+    int storkColor;
+    float btnRadius;
+    float storkWidth;
     float numberWidth;
     boolean supportMove;
     boolean supportEdit;
+    boolean longPressScroll;
     Paint paint = new Paint();
 
     public static interface OnNumberChangeListener {
+        void onNumberClick();
+
         void onNumberChanged(int value);
     }
 
@@ -65,40 +70,48 @@ public class FreeNumberPicker extends LinearLayout {
         init(attrs);
     }
 
-    TextView tvAdd, tvSub;
+    BtnView tvAdd, tvSub;
     EditText etNumber;
     int number;
 
     void init(AttributeSet attrs) {
 
         TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.FreeNumberPicker);
-        buttonColor = ta.getColor(R.styleable.FreeNumberPicker_buttonColor, Color.parseColor("#00000000"));
-        buttonDisableColor = ta.getColor(R.styleable.FreeNumberPicker_buttonDisableColor, Color.parseColor("#AAAAAA"));
-        buttonPressColor = ta.getColor(R.styleable.FreeNumberPicker_buttonPressColor, Color.parseColor("#888888"));
-        buttonTextColor = ta.getColor(R.styleable.FreeNumberPicker_buttonTextColor, Color.parseColor("#333333"));
-        buttonTextPressColor = ta.getColor(R.styleable.FreeNumberPicker_buttonTextPressColor, Color.parseColor("#AAAAAA"));
-        buttonTextDisableColor = ta.getColor(R.styleable.FreeNumberPicker_buttonTextDisableColor, Color.parseColor("#CCCCCC"));
+        btnColor = ta.getColor(R.styleable.FreeNumberPicker_btnColor, Color.TRANSPARENT);
+        btnDisableColor = ta.getColor(R.styleable.FreeNumberPicker_btnDisableColor, Color.parseColor("#AAAAAA"));
+        btnPressColor = ta.getColor(R.styleable.FreeNumberPicker_btnPressColor, Color.parseColor("#888888"));
+        btnTextColor = ta.getColor(R.styleable.FreeNumberPicker_btnTextColor, Color.parseColor("#333333"));
+        btnTextPressColor = ta.getColor(R.styleable.FreeNumberPicker_btnTextPressColor, Color.parseColor("#AAAAAA"));
+        btnTextDisableColor = ta.getColor(R.styleable.FreeNumberPicker_btnTextDisableColor, Color.parseColor("#CCCCCC"));
 
-        numberColor = ta.getColor(R.styleable.FreeNumberPicker_numberColor, Color.parseColor("#333333"));
+        numberColor = ta.getColor(R.styleable.FreeNumberPicker_numberColor, Color.TRANSPARENT);
+        numberTextColor = ta.getColor(R.styleable.FreeNumberPicker_numberTextColor, Color.BLACK);
         maxValue = ta.getInteger(R.styleable.FreeNumberPicker_maxValue, Integer.MAX_VALUE - 1);
-        minValue = ta.getColor(R.styleable.FreeNumberPicker_minValue, Integer.MIN_VALUE + 1);
-        buttonTextSize = ta.getDimension(R.styleable.FreeNumberPicker_buttonTextSize, dip2px(getContext(), 5));
-        numberSize = ta.getDimension(R.styleable.FreeNumberPicker_numberSize, dip2px(getContext(), 5));
-        borderColor = ta.getColor(R.styleable.FreeNumberPicker_borderColor, Color.parseColor("#666666"));
-        borderWidth = ta.getDimension(R.styleable.FreeNumberPicker_borderWidth, dip2px(getContext(), 1));
+        minValue = ta.getInteger(R.styleable.FreeNumberPicker_minValue, Integer.MIN_VALUE + 1);
+        btnTextSize = ta.getDimension(R.styleable.FreeNumberPicker_btnTextSize, dip2px(getContext(), 2));
+        numberSize = ta.getDimension(R.styleable.FreeNumberPicker_numberSize, dip2px(getContext(), 10));
+        storkColor = ta.getColor(R.styleable.FreeNumberPicker_storkColor, Color.parseColor("#666666"));
+        storkWidth = ta.getDimension(R.styleable.FreeNumberPicker_storkWidth, dip2px(getContext(), 1));
         numberWidth = ta.getDimension(R.styleable.FreeNumberPicker_numberWidth, 0);
         supportMove = ta.getBoolean(R.styleable.FreeNumberPicker_supportMove, true);
-        supportEdit = ta.getBoolean(R.styleable.FreeNumberPicker_supportMove, true);
-        buttonRadius = ta.getDimension(R.styleable.FreeNumberPicker_buttonRadius, 0);
+        supportEdit = ta.getBoolean(R.styleable.FreeNumberPicker_supportEdit, true);
+        btnRadius = ta.getDimension(R.styleable.FreeNumberPicker_btnRadius, 0);
+        longPressScroll = ta.getBoolean(R.styleable.FreeNumberPicker_longPressScroll, true);
         ta.recycle();
 
         paint = new Paint();
         paint.setAntiAlias(true);
-        removeAllViews();
+
         setGravity(Gravity.CENTER);
         setOrientation(HORIZONTAL);
 
+        reset();
+    }
+
+    public void reset() {
+        removeAllViews();
         setPaint();
+        setBg();
         setButton();
         setEdit();
 
@@ -108,28 +121,19 @@ public class FreeNumberPicker extends LinearLayout {
     void setPaint() {
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(borderWidth);
-        paint.setColor(borderColor);
+        paint.setStrokeWidth(storkWidth);
+        paint.setColor(storkColor);
     }
 
     void setButton() {
-        tvAdd = new TextView(getContext());
-        tvSub = new TextView(getContext());
-        tvAdd.setGravity(Gravity.CENTER);
-        tvSub.setGravity(Gravity.CENTER);
-        tvAdd.setTextSize(buttonTextSize);
-        tvSub.setTextSize(buttonTextSize);
+        tvAdd = new BtnView(getContext(), BtnView.TYPE_ADD);
+        tvSub = new BtnView(getContext(), BtnView.TYPE_SUB);
+        tvAdd.setTextSize(btnTextSize);
+        tvSub.setTextSize(btnTextSize);
         tvAdd.setPadding(0, 0, 0, 0);
         tvSub.setPadding(0, 0, 0, 0);
-
-        setTextColor(tvAdd);
-        setTextColor(tvSub);
-
         setAddBg();
         setSubBg();
-
-        tvSub.setText("-");
-        tvAdd.setText("+");
 
         LayoutParams tvSubParams = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
         LayoutParams tvAddParams = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -138,6 +142,8 @@ public class FreeNumberPicker extends LinearLayout {
 
 
         addView(tvSub, tvSubParams);
+        addDivider();
+        addDivider();
         addView(tvAdd, tvAddParams);
 
         tvSub.setOnClickListener(new OnClickListener() {
@@ -191,6 +197,13 @@ public class FreeNumberPicker extends LinearLayout {
         });
     }
 
+    void addDivider() {
+        View view = new View(getContext());
+        view.setBackgroundColor(storkColor);
+        LinearLayout.LayoutParams dividerLayoutParams = new LinearLayout.LayoutParams(Math.round(storkWidth), ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(view, dividerLayoutParams);
+    }
+
     static final int ADD = 1;
     static final int SUB = -1;
     int autoChangeGap = 50;
@@ -211,12 +224,28 @@ public class FreeNumberPicker extends LinearLayout {
         }
     };
 
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        if (this.number != number && number <= maxValue && number >= minValue) {
+            this.number = number;
+            if (onNumberChangeListener != null) {
+                onNumberChangeListener.onNumberChanged(number);
+            }
+        }
+        validateNumber();
+    }
+
     void startSub() {
-        autoChangeHandler.sendEmptyMessageDelayed(SUB, autoChangeGap);
+        if (longPressScroll)
+            autoChangeHandler.sendEmptyMessageDelayed(SUB, autoChangeGap);
     }
 
     void startAdd() {
-        autoChangeHandler.sendEmptyMessageDelayed(ADD, autoChangeGap);
+        if (longPressScroll)
+            autoChangeHandler.sendEmptyMessageDelayed(ADD, autoChangeGap);
     }
 
     void stopAutoChange() {
@@ -226,13 +255,53 @@ public class FreeNumberPicker extends LinearLayout {
 
     void setEdit() {
         etNumber = new EditText(getContext());
-        etNumber.setBackgroundResource(0);
+        etNumber.setBackgroundColor(numberColor);
         etNumber.setGravity(Gravity.CENTER);
         etNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
-        etNumber.setTextColor(numberColor);
+        etNumber.setTextColor(numberTextColor);
         etNumber.setTextSize(numberSize);
-        etNumber.setEnabled(supportEdit);
         etNumber.setPadding(0, 0, 0, 0);
+        etNumber.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onNumberChangeListener != null) {
+                    onNumberChangeListener.onNumberClick();
+                }
+            }
+        });
+        etNumber.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String expr = "^[0-9]+$";
+                if (s.toString().matches(expr)) {
+                    number = Integer.valueOf(s.toString());
+                    if (number > maxValue) {
+                        setNumber(maxValue);
+                    } else if (number < minValue) {
+                        setNumber(minValue);
+                    }
+                }
+            }
+        });
+        etNumber.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && "".equals(etNumber.getText().toString())) {
+                    setNumber(0);
+                }
+            }
+        });
+        etNumber.setFocusable(supportEdit);
         setNumberBg();
 
         LayoutParams etNumberParams = new LayoutParams(Math.round(numberWidth), ViewGroup.LayoutParams.MATCH_PARENT);
@@ -242,8 +311,7 @@ public class FreeNumberPicker extends LinearLayout {
             etNumberParams.weight = 0;
         }
 
-        etNumberParams.setMargins(Math.round(-borderWidth), 0, Math.round(-borderWidth), 0);
-        addView(etNumber, 1, etNumberParams);
+        addView(etNumber, 2, etNumberParams);
     }
 
     void subNumber() {
@@ -252,10 +320,10 @@ public class FreeNumberPicker extends LinearLayout {
             expectNumber = minValue;
         }
         if (expectNumber != number) {
+            number = expectNumber;
             if (onNumberChangeListener != null) {
                 onNumberChangeListener.onNumberChanged(expectNumber);
             }
-            number = expectNumber;
             validateNumber();
         }
     }
@@ -266,10 +334,10 @@ public class FreeNumberPicker extends LinearLayout {
             expectNumber = maxValue;
         }
         if (expectNumber != number) {
+            number = expectNumber;
             if (onNumberChangeListener != null) {
                 onNumberChangeListener.onNumberChanged(expectNumber);
             }
-            number = expectNumber;
             validateNumber();
         }
     }
@@ -281,6 +349,7 @@ public class FreeNumberPicker extends LinearLayout {
 
     void validateNumber() {
         if (number >= maxValue) {
+            number = maxValue;
             tvAdd.setEnabled(false);
         } else {
             tvAdd.setEnabled(true);
@@ -288,10 +357,12 @@ public class FreeNumberPicker extends LinearLayout {
 
         if (number <= minValue) {
             tvSub.setEnabled(false);
+            number = minValue;
         } else {
             tvSub.setEnabled(true);
         }
         etNumber.setText(String.valueOf(number));
+        etNumber.setSelection(etNumber.length());
     }
 
     @Override
@@ -366,26 +437,41 @@ public class FreeNumberPicker extends LinearLayout {
         GradientDrawable gd_background = new GradientDrawable();
         GradientDrawable gd_background_press = new GradientDrawable();
         GradientDrawable gd_background_disable = new GradientDrawable();
-        gd_background.setColor(buttonColor);
-        gd_background_press.setColor(buttonPressColor);
-        gd_background_disable.setColor(buttonDisableColor);
+        gd_background.setColor(btnColor);
+        gd_background_press.setColor(btnPressColor);
+        gd_background_disable.setColor(btnDisableColor);
         float[] radiusArr = new float[8];
-        radiusArr[0] = buttonRadius;
-        radiusArr[1] = buttonRadius;
-        radiusArr[6] = buttonRadius;
-        radiusArr[7] = buttonRadius;
+        radiusArr[0] = btnRadius;
+        radiusArr[1] = btnRadius;
+        radiusArr[6] = btnRadius;
+        radiusArr[7] = btnRadius;
         gd_background.setCornerRadii(radiusArr);
         gd_background_press.setCornerRadii(radiusArr);
         gd_background_disable.setCornerRadii(radiusArr);
-
-        gd_background.setStroke(Math.round(borderWidth), borderColor);
-        gd_background_press.setStroke(Math.round(borderWidth), borderColor);
-        gd_background_disable.setStroke(Math.round(borderWidth), borderColor);
-
         bg.addState(new int[]{android.R.attr.state_pressed}, gd_background_press);
         bg.addState(new int[]{android.R.attr.state_enabled}, gd_background);
         bg.addState(new int[]{}, gd_background_disable);
         tvSub.setBackgroundDrawable(bg);
+    }
+
+    void setBg() {
+        setPadding(Math.round(storkWidth), Math.round(storkWidth), Math.round(storkWidth), Math.round(storkWidth));
+        StateListDrawable bg = new StateListDrawable();
+        GradientDrawable gd_background = new GradientDrawable();
+        gd_background.setColor(Color.WHITE);
+        float[] radiusArr = new float[8];
+        radiusArr[0] = btnRadius;
+        radiusArr[1] = btnRadius;
+        radiusArr[2] = btnRadius;
+        radiusArr[3] = btnRadius;
+        radiusArr[4] = btnRadius;
+        radiusArr[5] = btnRadius;
+        radiusArr[6] = btnRadius;
+        radiusArr[7] = btnRadius;
+        gd_background.setCornerRadii(radiusArr);
+        gd_background.setStroke(Math.round(storkWidth), storkColor);
+        bg.addState(new int[]{}, gd_background);
+        setBackgroundDrawable(bg);
     }
 
     void setAddBg() {
@@ -393,22 +479,17 @@ public class FreeNumberPicker extends LinearLayout {
         GradientDrawable gd_background = new GradientDrawable();
         GradientDrawable gd_background_press = new GradientDrawable();
         GradientDrawable gd_background_disable = new GradientDrawable();
-        gd_background.setColor(buttonColor);
-        gd_background_press.setColor(buttonPressColor);
-        gd_background_disable.setColor(buttonDisableColor);
+        gd_background.setColor(btnColor);
+        gd_background_press.setColor(btnPressColor);
+        gd_background_disable.setColor(btnDisableColor);
         float[] radiusArr = new float[8];
-        radiusArr[2] = buttonRadius;
-        radiusArr[3] = buttonRadius;
-        radiusArr[4] = buttonRadius;
-        radiusArr[5] = buttonRadius;
+        radiusArr[2] = btnRadius;
+        radiusArr[3] = btnRadius;
+        radiusArr[4] = btnRadius;
+        radiusArr[5] = btnRadius;
         gd_background.setCornerRadii(radiusArr);
         gd_background_press.setCornerRadii(radiusArr);
         gd_background_disable.setCornerRadii(radiusArr);
-
-        gd_background.setStroke(Math.round(borderWidth), borderColor);
-        gd_background_press.setStroke(Math.round(borderWidth), borderColor);
-        gd_background_disable.setStroke(Math.round(borderWidth), borderColor);
-
         bg.addState(new int[]{android.R.attr.state_pressed}, gd_background_press);
         bg.addState(new int[]{android.R.attr.state_enabled}, gd_background);
         bg.addState(new int[]{}, gd_background_disable);
@@ -418,25 +499,255 @@ public class FreeNumberPicker extends LinearLayout {
     void setNumberBg() {
         StateListDrawable bg = new StateListDrawable();
         GradientDrawable gd_background = new GradientDrawable();
+        gd_background.setColor(numberColor);
         GradientDrawable gd_background_press = new GradientDrawable();
-        gd_background.setStroke(Math.round(borderWidth), borderColor);
-        gd_background_press.setStroke(Math.round(borderWidth), borderColor);
+        gd_background_press.setColor(numberColor);
         bg.addState(new int[]{android.R.attr.state_pressed}, gd_background_press);
         bg.addState(new int[]{}, gd_background);
         etNumber.setBackgroundDrawable(bg);
     }
 
-    void setTextColor(TextView tv) {
-        ColorStateList colorStateList = new ColorStateList(
-                new int[][]{
-                        new int[]{android.R.attr.state_pressed},
-                        new int[]{android.R.attr.state_enabled},
-                        new int[]{}},
-                new int[]{
-                        buttonTextPressColor,
-                        buttonTextColor,
-                        buttonTextDisableColor
-                });
-        tv.setTextColor(colorStateList);
+    public int getBtnColor() {
+        return btnColor;
+    }
+
+    public FreeNumberPicker setBtnColor(int btnColor) {
+        this.btnColor = btnColor;
+        return this;
+    }
+
+    public int getBtnDisableColor() {
+        return btnDisableColor;
+    }
+
+    public FreeNumberPicker setBtnDisableColor(int btnDisableColor) {
+        this.btnDisableColor = btnDisableColor;
+        return this;
+    }
+
+    public int getBtnPressColor() {
+        return btnPressColor;
+    }
+
+    public FreeNumberPicker setBtnPressColor(int btnPressColor) {
+        this.btnPressColor = btnPressColor;
+        return this;
+    }
+
+    public int getBtnTextColor() {
+        return btnTextColor;
+    }
+
+    public FreeNumberPicker setBtnTextColor(int btnTextColor) {
+        this.btnTextColor = btnTextColor;
+        return this;
+    }
+
+    public int getBtnTextPressColor() {
+        return btnTextPressColor;
+    }
+
+    public FreeNumberPicker setBtnTextPressColor(int btnTextPressColor) {
+        this.btnTextPressColor = btnTextPressColor;
+        return this;
+    }
+
+    public int getBtnTextDisableColor() {
+        return btnTextDisableColor;
+    }
+
+    public FreeNumberPicker setBtnTextDisableColor(int btnTextDisableColor) {
+        this.btnTextDisableColor = btnTextDisableColor;
+        return this;
+    }
+
+    public int getNumberColor() {
+        return numberColor;
+    }
+
+    public FreeNumberPicker setNumberColor(int numberColor) {
+        this.numberColor = numberColor;
+        return this;
+    }
+
+    public int getMaxValue() {
+        return maxValue;
+    }
+
+    public FreeNumberPicker setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
+        return this;
+    }
+
+    public int getMinValue() {
+        return minValue;
+    }
+
+    public FreeNumberPicker setMinValue(int minValue) {
+        this.minValue = minValue;
+        return this;
+    }
+
+    public float getBtnTextSize() {
+        return btnTextSize;
+    }
+
+    public FreeNumberPicker setBtnTextSize(float btnTextSize) {
+        this.btnTextSize = btnTextSize;
+        return this;
+    }
+
+    public float getNumberSize() {
+        return numberSize;
+    }
+
+    public FreeNumberPicker setNumberSize(float numberSize) {
+        this.numberSize = numberSize;
+        return this;
+    }
+
+    public int getStorkColor() {
+        return storkColor;
+    }
+
+    public FreeNumberPicker setStorkColor(int storkColor) {
+        this.storkColor = storkColor;
+        return this;
+    }
+
+    public float getBtnRadius() {
+        return btnRadius;
+    }
+
+    public FreeNumberPicker setBtnRadius(float btnRadius) {
+        this.btnRadius = btnRadius;
+        return this;
+    }
+
+    public float getStorkWidth() {
+        return storkWidth;
+    }
+
+    public FreeNumberPicker setStorkWidth(float storkWidth) {
+        this.storkWidth = storkWidth;
+        return this;
+    }
+
+    public float getNumberWidth() {
+        return numberWidth;
+    }
+
+    public FreeNumberPicker setNumberWidth(float numberWidth) {
+        this.numberWidth = numberWidth;
+        return this;
+    }
+
+    public boolean isSupportMove() {
+        return supportMove;
+    }
+
+    public FreeNumberPicker setSupportMove(boolean supportMove) {
+        this.supportMove = supportMove;
+        return this;
+    }
+
+    public boolean isSupportEdit() {
+        return supportEdit;
+    }
+
+    public FreeNumberPicker setSupportEdit(boolean supportEdit) {
+        this.supportEdit = supportEdit;
+        return this;
+    }
+
+    public boolean isLongPressScroll() {
+        return longPressScroll;
+    }
+
+    public void setLongPressScroll(boolean longPressScroll) {
+        this.longPressScroll = longPressScroll;
+    }
+
+    public class BtnView extends View {
+        public static final int TYPE_SUB = -1;
+        public static final int TYPE_ADD = 1;
+        public int type;
+        public float textSize;
+
+        Paint paint = new Paint();
+
+        public BtnView(Context context, int type) {
+            super(context);
+            this.type = type;
+            paint.setAntiAlias(true);
+        }
+
+        int mViewWidth, mViewHeight;
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+            super.onSizeChanged(w, h, oldw, oldh);
+            mViewWidth = w;
+            mViewHeight = h;
+            Log.d(BtnView.class.getName(), "mViewWidth：" + w + "-" + "mViewHeight:" + h);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            switch (type) {
+                case TYPE_SUB:
+                    drawHorizontal(canvas);
+                    break;
+                case TYPE_ADD:
+                    drawHorizontal(canvas);
+                    drawVertical(canvas);
+                    break;
+            }
+        }
+
+        void drawHorizontal(Canvas canvas) {
+            canvas.drawRect(mViewWidth * 0.2f, (mViewHeight - textSize) / 2, mViewWidth * 0.8f, (mViewHeight + textSize) / 2, paint);
+        }
+
+        void drawVertical(Canvas canvas) {
+            canvas.drawRect((mViewWidth - textSize) / 2, mViewHeight * 0.2f, (mViewWidth + textSize) / 2, mViewHeight * 0.8f, paint);
+        }
+
+        public void setTextSize(float textSize) {
+            this.textSize = textSize;
+            invalidate();
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (isEnabled()) {
+                        paint.setColor(btnTextPressColor);
+                        invalidate();
+                    }
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    if (isEnabled()) {
+                        paint.setColor(btnTextColor);
+                        invalidate();
+                    }
+                    break;
+            }
+            return super.onTouchEvent(event);
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            if (enabled) {
+                paint.setColor(btnTextColor);
+            } else {
+                paint.setColor(btnTextDisableColor);
+            }
+            invalidate();
+        }
     }
 }

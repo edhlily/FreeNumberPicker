@@ -1,22 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="FreeNumberPicker">
-        <attr name="buttonColor" format="color" />
-        <attr name="buttonPressColor" format="color" />
-        <attr name="buttonTextColor" format="color" />
-        <attr name="buttonTextPressColor" format="color" />
-        <attr name="buttonTextDisableColor" format="color" />
+        <!-- 按钮正常的颜色-->
+        <attr name="btnColor" format="color" />
+        <!-- 按钮按下颜色-->
+        <attr name="btnPressColor" format="color" />
+        <!-- 按钮文字颜色-->
+        <attr name="btnTextColor" format="color" />
+        <!-- 按钮按下文字颜色-->
+        <attr name="btnTextPressColor" format="color" />
+        <!-- 按钮无法点击的颜色-->
+        <attr name="btnTextDisableColor" format="color" />
+        <!-- 中间数字背景颜色-->
         <attr name="numberColor" format="color" />
+        <!-- 中间数字的颜色-->
+        <attr name="numberTextColor" format="color" />
+        <!-- 最小值，达到最小值减按钮无法点击-->
         <attr name="minValue" format="integer" />
+        <!-- 最大值，达到最大值加按钮无法点击-->
         <attr name="maxValue" format="integer" />
-        <attr name="buttonTextSize" format="dimension" />
+        <!-- 按钮文字大小 单位dp（加减线条大小）-->
+        <attr name="btnTextSize" format="dimension" />
+        <!-- 数字大小 单位dp（文字的大小）-->
         <attr name="numberSize" format="dimension" />
+        <!-- 中间数字所占宽度，其它的加减按钮平分-->
         <attr name="numberWidth" format="dimension" />
+        <!-- 数字是否支持键盘编辑-->
         <attr name="supportEdit" format="boolean" />
+        <!-- 数字是否支持手指左后滑动数字滚动-->
         <attr name="supportMove" format="boolean" />
-        <attr name="borderColor" format="color" />
-        <attr name="borderWidth" format="dimension" />
-        <attr name="buttonRadius" format="dimension" />
-        <attr name="buttonDisableColor" format="color" />
+        <!-- 边框颜色-->
+        <attr name="storkColor" format="color" />
+        <!-- 边框大小-->
+        <attr name="storkWidth" format="dimension" />
+        <!-- 按钮圆角半径-->
+        <attr name="btnRadius" format="dimension" />
+        <!-- 按钮无法点击时的颜色-->
+        <attr name="btnDisableColor" format="color" />
+        <!-- 长按按钮数字自动滚动 默认true-->
+        <attr name="longPressScroll" format="boolean" />
     </declare-styleable>
 </resources>

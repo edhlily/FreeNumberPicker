@@ -25,4 +25,9 @@ public class MainActivity extends AppCompatActivity implements FreeNumberPicker.
         toast = Toast.makeText(this, "change:" + value, Toast.LENGTH_SHORT);
         toast.show();
     }
+
+    @Override
+    public void onNumberClick() {
+        
+    }
 }
